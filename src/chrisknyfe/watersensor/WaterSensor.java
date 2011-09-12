@@ -118,7 +118,13 @@ public class WaterSensor extends JavaPlugin {
 	 * @return True if blocks were modified (only levers are changed.)
 	 */
 	public boolean executeSensorsAroundBlock(BlockState b, boolean evaporation, Event event){
-		debugprint("Detectable event " + event.getType());
+		//debugprint("Detectable event " + event.getType());
+		
+		// Debug BLOCK_PHYSICS events: does water have a value?
+		if (event.getType() == Event.Type.BLOCK_PHYSICS){
+			debugprint(b.getType() + " physics data == " + b.getData() );
+		}
+		
 		// Check all blocks surrounding the water.
 		Block bBlock = b.getBlock();
 		Block here;
