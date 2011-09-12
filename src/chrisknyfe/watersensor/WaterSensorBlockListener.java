@@ -8,6 +8,16 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+/**
+ * @author Zach Bernal (Chrisknyfe)
+ * 
+ * BlockListener for the Water Sensor plugin.
+ * 
+ * Update sensors when water flows, when water sensor components are placed,
+ * when water is replaced by another block, when water drains, 
+ * and when pistons affect water or water sensors.
+ *
+ */
 public class WaterSensorBlockListener extends BlockListener{
 	public static WaterSensor plugin;
 	
@@ -15,7 +25,9 @@ public class WaterSensorBlockListener extends BlockListener{
 		plugin = instance;
 	}
 	
-	// Flowing Water
+	/**
+	 * Detect an event where water is flowing.
+	 */
 	public void onBlockFromTo(BlockFromToEvent event) {
 		if (event.isCancelled()) return;
 		
@@ -29,7 +41,10 @@ public class WaterSensorBlockListener extends BlockListener{
 		}
 	}
 	
-	// When you just gotta place some 8... or replace it. Also works for levers!
+	/** 
+	 * When you just gotta place some 8... or replace it.
+	 * Also works when you place water sensor components (block or lever)
+	 */
 	public void onBlockPlace(BlockPlaceEvent event){
 		if (event.isCancelled()) return;
 		
@@ -44,7 +59,9 @@ public class WaterSensorBlockListener extends BlockListener{
 		}
 	}
 	
-	// When water drains.
+	/**
+	 * Detect when water drains.
+	 */
 	public void onBlockPhysics(BlockPhysicsEvent event){
 		if (event.isCancelled()) return;
 		
@@ -55,7 +72,9 @@ public class WaterSensorBlockListener extends BlockListener{
 		}
 	}
 	
-	// PISTONS MAH BOI.
+	/**
+	 * Detect when pistons affect water or sensor components. PISTONS MAH BOI!
+	 */
 	public void onBlockPistonExtend(BlockPistonExtendEvent event){
 		if (event.isCancelled()) return;
 		

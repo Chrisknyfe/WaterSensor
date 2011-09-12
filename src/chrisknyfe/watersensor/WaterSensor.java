@@ -12,20 +12,21 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
-/* Design goals of this plugin:
+/**
+ * @author Zach Bernal (Chrisknyfe)
+ *
+ * WaterSensor - A robust, lightweight water sensor plugin.
+ * 
+ * This is the main plugin class, where the sensor's logic is executed, 
+ * and various plugin bookkeeping tasks are done.
+ * 
+ * Design goals of this plugin:
  * 
  * Robust (it Just Fucking Works.)
  * Non-intrusive to other plugins.
  * Doesn't grief your structures (no block placing or removal.)
  * Doesn't need to register anything, or make any new threads, so that plugins like TempleCraft can use it.
  * Easy to read and use as an example for your own plugins.
- * 
-*/
-
-/**
- * @author zbernal
- *
- * WaterSensor - sense water adjacent to a Lapiz Lazuli block (or whatever block you specify)
  * 
  */
 public class WaterSensor extends JavaPlugin {
@@ -34,9 +35,17 @@ public class WaterSensor extends JavaPlugin {
 	private final WaterSensorBlockListener blockListener = new WaterSensorBlockListener(this);
 	private final WaterSensorPlayerListener playerListener = new WaterSensorPlayerListener(this);
 	
+	/**
+	 * The Block ID of the water sensor (loaded from configuration.)
+	 */
 	int sensorBlockId;
-	boolean debugPrint; //enable or disable debug printing
-	// Used to iterate through all the adjacent blocks of the selected block.
+	/**
+	 * Enable or disable debug printing.
+	 */
+	boolean debugPrint;
+	/**
+	 * Used to iterate through all the adjacent blocks of the selected block.
+	 */
 	public final BlockFace adjacents[] = {BlockFace.UP,
 			BlockFace.DOWN,
 			BlockFace.NORTH,
@@ -45,7 +54,7 @@ public class WaterSensor extends JavaPlugin {
 			BlockFace.WEST,};
 	
 	public void onEnable(){
-		// Listeners
+		// Register Listeners
 		PluginManager pm = this.getServer().getPluginManager();
 		pm.registerEvent(Event.Type.BLOCK_FROMTO, blockListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Event.Priority.Normal, this);
@@ -54,7 +63,7 @@ public class WaterSensor extends JavaPlugin {
 		pm.registerEvent(Event.Type.PLAYER_BUCKET_FILL, playerListener, Event.Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLAYER_BUCKET_EMPTY, playerListener, Event.Priority.Normal, this);
 		
-		// Configuration
+		// Load & Create Configuration
 		CONFIG = getConfiguration();
 		CONFIG.load();
 		sensorBlockId = CONFIG.getInt("sensorBlockId", 22);
@@ -63,34 +72,51 @@ public class WaterSensor extends JavaPlugin {
 		CONFIG.setProperty("debugPrint", debugPrint);
 		CONFIG.save();
 		
-		// Celebration
-		debugprint("[WaterSensor] has been enabled!");
+		// Greet the server.
+		log.info("[WaterSensor] has been enabled!");
 	}
 	
 	public void onDisable(){
 		CONFIG.save();
-		debugprint("[WaterSensor] has been disabled.");
+		log.info("[WaterSensor] has been disabled.");
 	}
 	
-	// Logging mechanism: easy to turn off with config!
+	/**
+	 *  Logging mechanism: easy to turn off with config!
+	 * @param msg The string to print.
+	 */
 	public void debugprint(String msg){
 		if (debugPrint) log.info(msg);
 	}
 	
-	// Is this block a detectable block?
+	/**
+	 * Is this block a detectable block?
+	 * @param b Block to check.
+	 * @return Whether this block is detectable by the plugin
+	 */
 	public boolean isBlockStateDetectable(BlockState b){
 		return (b.getType() == Material.WATER 
 				|| b.getType() == Material.STATIONARY_WATER);
 	}
 	
-	// Can this block cause a sensor update? Should include detectable blocks.
+	/**
+	 * Can this block cause a sensor update? Should include detectable blocks, the sensor block itself, and levers.
+	 * @param b Block to check.
+	 * @return Whether this block should trigger sensor updates when placed.
+	 */
 	public boolean isBlockStateAnUpdater(BlockState b){
 		return (isBlockStateDetectable(b) 
 				|| b.getTypeId() == sensorBlockId
 				|| b.getType() == Material.LEVER );
 	}
 	
-	// Look at adjacent sensors if this block is relevant for sensing
+	/**
+	 * Look at adjacent sensors if this block is relevant for sensing
+	 * @param b Block that is triggering the sensor checking (generally a water block.)
+	 * @param evaporation If true, ignore the triggering block because its water is decaying.
+	 * @param event Event that triggered this sensor update. Debugging purposes only.
+	 * @return True if blocks were modified (only levers are changed.)
+	 */
 	public boolean executeSensorsAroundBlock(BlockState b, boolean evaporation, Event event){
 		debugprint("Detectable event " + event.getType());
 		// Check all blocks surrounding the water.
@@ -110,8 +136,12 @@ public class WaterSensor extends JavaPlugin {
 		return wasLeverTurned;
 	}
 	
-	// Run a sensor pass on the current location.
-	// Return true if blocks were modified (a lever was turned!)
+	/**
+	 * Run a sensor pass on the current location.
+	 * @param b Sensor Block that is doing the sensing.
+	 * @param ignoreDirection Ignore this direction (generally because there's still water there that will decay next tick.)
+	 * @return True if blocks were modified (only levers are changed.)
+	 */
 	public boolean executeSensor(Block b, BlockFace ignoreDirection){
 		// ======== Only sense if this is a sensor block. ======== 
 		if ( b.getTypeId() != sensorBlockId ) return false;
@@ -126,7 +156,7 @@ public class WaterSensor extends JavaPlugin {
 				debugprint("Ignoring direction " + direction);
 				continue;
 			}
-			if (here.getType() == Material.WATER || here.getType() == Material.STATIONARY_WATER){
+			if (isBlockStateDetectable(here.getState())){
 				isPowered = true;
 				debugprint("Found water!");
 			}
