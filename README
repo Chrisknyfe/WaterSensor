@@ -1,0 +1,5 @@
+WaterSensor is a simple, robust plugin for making quick water sensors in minecraft.
+Simply place a Lapiz Lazuli block next to water, and place a lever on any side of that block.
+The lever will switch whenever the water sensor detects water adjacent to it.
+
+Because boats are crap.

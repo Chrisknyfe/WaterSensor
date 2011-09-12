@@ -1,0 +1,3 @@
+name: WaterSensor
+main: chrisknyfe.watersensor.WaterSensor
+version: 0.1
