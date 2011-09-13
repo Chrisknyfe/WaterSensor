@@ -1,4 +1,4 @@
-package chrisknyfe.watersensor;
+package net.chrisknyfe.watersensor;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;

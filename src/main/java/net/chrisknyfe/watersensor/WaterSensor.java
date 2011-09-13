@@ -1,4 +1,4 @@
-package chrisknyfe.watersensor;
+package net.chrisknyfe.watersensor;
 
 import java.util.logging.Logger;
 
