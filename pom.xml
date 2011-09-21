@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.chrisknyfe</groupId>
   <artifactId>WaterSensor</artifactId>
-  <version>dev</version>
   <repositories>
     <repository>
       <id>bukkit-repo</id>
@@ -32,4 +31,7 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
+  <version>1.0</version>
+  <url>http://dev.bukkit.org/server-mods/watersensor/</url>
+  <description>http://dev.bukkit.org/server-mods/watersensor/</description>
 </project>
