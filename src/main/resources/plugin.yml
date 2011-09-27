@@ -1,5 +1,5 @@
 name: WaterSensor
-main: chrisknyfe.watersensor.WaterSensor
+main: net.chrisknyfe.watersensor.WaterSensor
 version: 1.0
 description: A robust, lightweight water sensor plugin.
 author: Chrisknyfe
