@@ -119,11 +119,27 @@ public class WaterSensor extends JavaPlugin {
 	 */
 	public boolean executeSensorsAroundBlock(BlockState b, boolean evaporation, Event event){
 		//debugprint("Detectable event " + event.getType());
+		boolean isEvaporating = false;
 		
+		/*
 		// Debug BLOCK_PHYSICS events: does water have a value?
 		if (event.getType() == Event.Type.BLOCK_PHYSICS){
 			debugprint(b.getType() + " physics data == " + b.getData() );
 		}
+		*/
+		
+		// If this is a BLOCK_PHYSICS event, only evaporate if water is about to drain
+		if ( evaporation && (event.getType() == Event.Type.BLOCK_PHYSICS) ){
+			debugprint("Physics event...");
+			if ( (b.getType() == Material.WATER) && (b.getData().getData() >= 6) ) isEvaporating = true;
+			else if ( (b.getType() == Material.STATIONARY_WATER) && (b.getData().getData() == 1) ) isEvaporating = true;
+		}
+		else
+		{
+			isEvaporating = evaporation;
+		}
+		
+		
 		
 		// Check all blocks surrounding the water.
 		Block bBlock = b.getBlock();
@@ -131,14 +147,15 @@ public class WaterSensor extends JavaPlugin {
 		boolean wasLeverTurned = false;
 		for(BlockFace direction: adjacents) {
 			here = bBlock.getRelative(direction);
-			if (evaporation){
-				if ( executeSensor(here, direction.getOppositeFace()) ) wasLeverTurned = true;
+			if (isEvaporating){
+				if ( executeSensor(here, direction.getOppositeFace(), event) ) wasLeverTurned = true;				
 			} 
 			else {
 				// since the water sensor will never check itself for water... this is a HACK.
-				if ( executeSensor(here, BlockFace.SELF) ) wasLeverTurned = true; 
+				if ( executeSensor(here, BlockFace.SELF, event) ) wasLeverTurned = true; 
 			}
 		}
+		
 		return wasLeverTurned;
 	}
 	
@@ -148,7 +165,7 @@ public class WaterSensor extends JavaPlugin {
 	 * @param ignoreDirection Ignore this direction (generally because there's still water there that will decay next tick.)
 	 * @return True if blocks were modified (only levers are changed.)
 	 */
-	public boolean executeSensor(Block b, BlockFace ignoreDirection){
+	public boolean executeSensor(Block b, BlockFace ignoreDirection, Event event){
 		// ======== Only sense if this is a sensor block. ======== 
 		if ( b.getTypeId() != sensorBlockId ) return false;
 		
@@ -180,7 +197,15 @@ public class WaterSensor extends JavaPlugin {
 			}
 		}
 		
-		debugprint("Ran sensor pass on " + b );
+		/*// DEBUG
+		// Freeze the block that's evaporating anyway!
+		if (ignoreDirection != BlockFace.SELF){
+			b.getRelative(ignoreDirection).setType(Material.SNOW_BLOCK);
+			debugprint("Snowed block " + b);
+		}
+		*/
+		
+		debugprint("Ran sensor pass on " + b + ", Event " + event );
 		return wasLeverTurned;
 	}
 }
