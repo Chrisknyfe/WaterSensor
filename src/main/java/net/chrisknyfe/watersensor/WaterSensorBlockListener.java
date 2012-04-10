@@ -2,8 +2,9 @@ package net.chrisknyfe.watersensor;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -18,7 +19,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
  * and when pistons affect water or water sensors.
  *
  */
-public class WaterSensorBlockListener extends BlockListener{
+public class WaterSensorBlockListener implements Listener{
 	public static WaterSensor plugin;
 	
 	public WaterSensorBlockListener(WaterSensor instance) {
@@ -28,6 +29,7 @@ public class WaterSensorBlockListener extends BlockListener{
 	/**
 	 * Detect an event where water is flowing.
 	 */
+	@EventHandler
 	public void onBlockFromTo(BlockFromToEvent event) {
 		if (event.isCancelled()) return;
 		
@@ -45,6 +47,7 @@ public class WaterSensorBlockListener extends BlockListener{
 	 * When you just gotta place some 8... or replace it.
 	 * Also works when you place water sensor components (block or lever)
 	 */
+	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event){
 		if (event.isCancelled()) return;
 		
@@ -62,6 +65,7 @@ public class WaterSensorBlockListener extends BlockListener{
 	/**
 	 * Detect when water drains.
 	 */
+	@EventHandler
 	public void onBlockPhysics(BlockPhysicsEvent event){
 		if (event.isCancelled()) return;
 		
@@ -75,6 +79,7 @@ public class WaterSensorBlockListener extends BlockListener{
 	/**
 	 * Detect when pistons affect water or sensor components. PISTONS MAH BOI!
 	 */
+	@EventHandler
 	public void onBlockPistonExtend(BlockPistonExtendEvent event){
 		if (event.isCancelled()) return;
 		
