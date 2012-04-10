@@ -1,9 +1,10 @@
 package net.chrisknyfe.watersensor;
 
 import org.bukkit.block.BlockState;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
-import org.bukkit.event.player.PlayerListener;
 
 /**
  * @author Zach Bernal (Chrisknyfe)
@@ -12,7 +13,7 @@ import org.bukkit.event.player.PlayerListener;
  * 
  * Detects when players fill and empty buckets.
  */
-public class WaterSensorPlayerListener extends PlayerListener{
+public class WaterSensorPlayerListener implements Listener{
 	public static WaterSensor plugin;
 	
 	public WaterSensorPlayerListener(WaterSensor instance) {
@@ -23,6 +24,7 @@ public class WaterSensorPlayerListener extends PlayerListener{
 	 * Detect when a player fills their bucket, destroying a
 	 * water block.
 	 */
+	@EventHandler
 	public void onPlayerBucketFill(PlayerBucketFillEvent event){
 		if (event.isCancelled()) return;
 		
@@ -37,6 +39,7 @@ public class WaterSensorPlayerListener extends PlayerListener{
 	 * Detect when a player empties their bucket, creating a
 	 * water block.
 	 */
+	@EventHandler
 	public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event){
 		if (event.isCancelled()) return;
 		

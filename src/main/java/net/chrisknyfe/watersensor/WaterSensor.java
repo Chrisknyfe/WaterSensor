@@ -1,16 +1,21 @@
 package net.chrisknyfe.watersensor;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material; //uppercase is the enum
 import org.bukkit.material.Lever; // lowercase is the namespace
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Event;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
 
 /**
  * @author Zach Bernal (Chrisknyfe)
@@ -30,7 +35,7 @@ import org.bukkit.util.config.Configuration;
  * 
  */
 public class WaterSensor extends JavaPlugin {
-	protected Configuration CONFIG;
+	protected FileConfiguration CONFIG;
 	protected Logger log = Logger.getLogger("Minecraft");
 	private final WaterSensorBlockListener blockListener = new WaterSensorBlockListener(this);
 	private final WaterSensorPlayerListener playerListener = new WaterSensorPlayerListener(this);
@@ -43,6 +48,9 @@ public class WaterSensor extends JavaPlugin {
 	 * Enable or disable debug printing.
 	 */
 	boolean debugPrint;
+	
+	private File configFile = null;
+	
 	/**
 	 * Used to iterate through all the adjacent blocks of the selected block.
 	 */
@@ -56,28 +64,33 @@ public class WaterSensor extends JavaPlugin {
 	public void onEnable(){
 		// Register Listeners
 		PluginManager pm = this.getServer().getPluginManager();
-		pm.registerEvent(Event.Type.BLOCK_FROMTO, blockListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_PHYSICS, blockListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.BLOCK_PISTON_EXTEND, blockListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_BUCKET_FILL, playerListener, Event.Priority.Normal, this);
-		pm.registerEvent(Event.Type.PLAYER_BUCKET_EMPTY, playerListener, Event.Priority.Normal, this);
+		pm.registerEvents(blockListener, this);
+		pm.registerEvents(playerListener, this);
 		
 		// Load & Create Configuration
-		CONFIG = getConfiguration();
-		CONFIG.load();
-		sensorBlockId = CONFIG.getInt("sensorBlockId", 22);
-		CONFIG.setProperty("sensorBlockId", sensorBlockId);
-		debugPrint = CONFIG.getBoolean("debugPrint", false);
-		CONFIG.setProperty("debugPrint", debugPrint);
-		CONFIG.save();
+		try {
+			CONFIG = getConfig();
+			CONFIG.load(getConfigFile());
+			sensorBlockId = CONFIG.getInt("sensorBlockId", 22);
+			CONFIG.set("sensorBlockId", sensorBlockId);
+			debugPrint = CONFIG.getBoolean("debugPrint", false);
+			CONFIG.set("debugPrint", debugPrint);
+			CONFIG.save(getConfigFile());
+		} catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+			Bukkit.getPluginManager().disablePlugin(this);
+		}
 		
 		// Greet the server.
 		log.info("[WaterSensor] has been enabled!");
 	}
 	
 	public void onDisable(){
-		CONFIG.save();
+		try {
+			CONFIG.save(getConfigFile());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		log.info("[WaterSensor] has been disabled.");
 	}
 	
@@ -129,7 +142,7 @@ public class WaterSensor extends JavaPlugin {
 		*/
 		
 		// If this is a BLOCK_PHYSICS event, only evaporate if water is about to drain
-		if ( evaporation && (event.getType() == Event.Type.BLOCK_PHYSICS) ){
+		if ( evaporation && (event instanceof BlockPhysicsEvent) ){
 			debugprint("Physics event...");
 			if ( (b.getType() == Material.WATER) && (b.getData().getData() >= 6) ) isEvaporating = true;
 			else if ( (b.getType() == Material.STATIONARY_WATER) && (b.getData().getData() == 1) ) isEvaporating = true;
@@ -208,4 +221,29 @@ public class WaterSensor extends JavaPlugin {
 		debugprint("Ran sensor pass on " + b + ", Event " + event );
 		return wasLeverTurned;
 	}
+	
+	@Override
+	public File getDataFolder() {
+		File r = super.getDataFolder(); 
+		if (!r.exists()){
+			r.mkdirs();
+		}
+		return r;
+	}
+	
+	private File getConfigFile(){
+		if (configFile == null){
+			configFile = new File(getDataFolder(), getDescription().getName() + ".yml");
+			if (!configFile.exists()){
+				try {
+					configFile.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+					Bukkit.getPluginManager().disablePlugin(this);
+				}
+			}
+		}
+		return configFile;
+	}
+	
 }
